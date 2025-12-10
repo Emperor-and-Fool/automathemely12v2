@@ -1,0 +1,56 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.coverage.*
+.cache/
+.pyre/
+
+# Virtual envs (even if you keep them elsewhere)
+.venv/
+venv/
+env/
+penv_*/
+pyvenv.cfg
+
+# ---- Packaging / installers ----
+*.whl
+*.tar.gz
+
+# ---- Logs / runtime ----
+*.log
+*.pid
+*.sqlite3
+*.db
+
+# ---- OS junk ----
+.DS_Store
+Thumbs.db
+
+# ---- Editors / IDEs ----
+.vscode/
+.vscodium/
+*.code-workspace
+.idea/
+*.iml
+
+# ---- Jupyter / notebooks ----
+.ipynb_checkpoints/
+
+# ---- Local config / secrets ----
+.env
+.env.*
+*.secrets.*
+config.local.*
