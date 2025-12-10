@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=AutomaThemely
+Comment=Python application for changing between desktop themes periodically.
+Exec=automathemely --manage
+Icon=automathemely
+Terminal=false
+StartupNotify=false
+Actions=Run;Update;Restart;
+
+[Desktop Action Run]
+Exec=automathemely
+Name=Run AutomaThemely
+
+[Desktop Action Update]
+Exec=automathemely --update
+Name= Update sun times
+
+[Desktop Action Restart]
+Exec=automathemely --restart
+Name= Restart the scheduler
