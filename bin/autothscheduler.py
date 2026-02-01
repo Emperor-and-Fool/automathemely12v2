@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+import shutil
 import logging
 import time
 from datetime import datetime
@@ -46,18 +48,32 @@ def get_next_run():
 
 
 def run_automathemely():
-    from automathemely.autoth_tools.utils import verify_desktop_session
-    # You can't change the theme if the desktop session is not active (E. g. when you close a laptop's lid)
-    verify_desktop_session(True)
+    """
+    Run the main automathemely CLI for the scheduled event.
 
-    from subprocess import check_output, PIPE
+    Prefer a real 'automathemely' executable on PATH (user-installed launcher),
+    otherwise fall back to invoking the current Python interpreter with the
+    package module (-m automathemely). This ensures we stay inside the venv
+    when the scheduler was started from a venv.
+    """
     try:
-        check_output('automathemely', stderr=PIPE)
+        verify_desktop_session(True)
+
+        # prefer an installed wrapper/launcher if available
+        wrapper = shutil.which("automathemely")
+        if wrapper:
+            cmd = [wrapper]
+        else:
+            # fallback to the current interpreter running this process
+            py = sys.executable or "python3"
+            cmd = [py, "-m", "automathemely"]
+
+        check_output(cmd, stderr=PIPE)
     except Exception as e:
-        logger.exception('Exception while running AutomaThemely', exc_info=e)
-
-    return CancelJob
-
+        logger.exception("Scheduled run failed: %s", e)
+    finally:
+        # The scheduler expects the job to cancel itself after running once
+        return CancelJob
 
 class SafeScheduler(Scheduler):
     def __init__(self, reschedule_on_failure=False):
