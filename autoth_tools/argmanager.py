@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import sys
 import json
 import logging
 import pickle as pkl
@@ -118,7 +119,7 @@ def main(us_se):
         from subprocess import Popen, DEVNULL
         if pgrep(['autothscheduler.py'], use_full=True):
             Popen(['pkill', '-f', 'autothscheduler.py']).wait()
-        Popen(['python3', get_bin('autothscheduler.py')], start_new_session=True, stdout=DEVNULL, stderr=DEVNULL)
+        Popen([sys.executable, get_bin('autothscheduler.py')], start_new_session=True, stdout=DEVNULL, stderr=DEVNULL)
         logger.info('Restarted the scheduler')
     
     #   MANUAL theme mode

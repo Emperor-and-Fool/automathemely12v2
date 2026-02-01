@@ -1,0 +1,5 @@
+pytz
+tzlocal
+astral
+schedule
+requests

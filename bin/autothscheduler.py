@@ -20,9 +20,7 @@ for handler in logger.handlers[:]:
 
 
 def get_next_run():
-    import pickle
-    import tzlocal
-    import pytz
+    import pickle, tzlocal, pytz
     try:
         with open(get_local('sun_times'), 'rb') as file:
             sunrise, sunset = pickle.load(file)
@@ -31,9 +29,15 @@ def get_next_run():
         logger.error('Could not find times file, exiting...')
         sys.exit()
 
-    now = datetime.now(pytz.utc).astimezone(tzlocal.get_localzone()).time()
-    sunrise, sunset = (sunrise.astimezone(tzlocal.get_localzone()).time(),
-                       sunset.astimezone(tzlocal.get_localzone()).time())
+    try:
+        local_tz = tzlocal.get_localzone()
+    except Exception as e:
+        logger.warning('tzlocal failed (%s), falling back to system local timezone', e)
+        local_tz = datetime.now().astimezone().tzinfo
+
+    now = datetime.now(pytz.utc).astimezone(local_tz).time()
+    sunrise, sunset = (sunrise.astimezone(local_tz).time(),
+                       sunset.astimezone(local_tz).time())
 
     if sunrise < now < sunset:
         return ':'.join(str(sunset).split(':')[:-1])
@@ -73,7 +77,7 @@ class SafeScheduler(Scheduler):
 scheduler = SafeScheduler()
 
 while True:
-    scheduler.every().day.at(get_next_run()).do(run_automathemely())
+    scheduler.every().day.at(get_next_run()).do(run_automathemely)
 
     while True:
         if not scheduler.jobs:
