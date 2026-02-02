@@ -48,17 +48,24 @@ def get_next_run():
 
 
 def run_automathemely():
-    try:
-        verify_desktop_session(True)
-        # Always use the same interpreter that runs this scheduler
-        py = sys.executable or "python3"
-        cmd = [py, "-m", "automathemely"]
-        check_output(cmd, stderr=PIPE)
-    except Exception as e:
-        logger.exception("Scheduled run failed: %s", e)
-    finally:
-        # The scheduler expects the job to cancel itself after running once
-        return CancelJob
+    # run the blocking/waiting task in a daemon thread so the scheduler loop
+    # stays responsive (verify_desktop_session(True) blocks).
+    from threading import Thread
+
+    def _task():
+        from automathemely.autoth_tools.utils import verify_desktop_session
+        from subprocess import check_output, PIPE
+        try:
+            verify_desktop_session(True)
+            py = sys.executable or "python3"
+            cmd = [py, "-m", "automathemely"]
+            check_output(cmd, stderr=PIPE)
+        except Exception as e:
+            logger.exception("Scheduled run failed: %s", e)
+
+    Thread(target=_task, daemon=True).start()
+    # job should cancel itself after launch
+    return CancelJob
 
 class SafeScheduler(Scheduler):
     def __init__(self, reschedule_on_failure=False):
