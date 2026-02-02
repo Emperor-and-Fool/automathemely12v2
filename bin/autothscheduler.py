@@ -48,26 +48,11 @@ def get_next_run():
 
 
 def run_automathemely():
-    """
-    Run the main automathemely CLI for the scheduled event.
-
-    Prefer a real 'automathemely' executable on PATH (user-installed launcher),
-    otherwise fall back to invoking the current Python interpreter with the
-    package module (-m automathemely). This ensures we stay inside the venv
-    when the scheduler was started from a venv.
-    """
     try:
         verify_desktop_session(True)
-
-        # prefer an installed wrapper/launcher if available
-        wrapper = shutil.which("automathemely")
-        if wrapper:
-            cmd = [wrapper]
-        else:
-            # fallback to the current interpreter running this process
-            py = sys.executable or "python3"
-            cmd = [py, "-m", "automathemely"]
-
+        # Always use the same interpreter that runs this scheduler
+        py = sys.executable or "python3"
+        cmd = [py, "-m", "automathemely"]
         check_output(cmd, stderr=PIPE)
     except Exception as e:
         logger.exception("Scheduled run failed: %s", e)
