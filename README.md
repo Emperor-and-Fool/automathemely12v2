@@ -20,8 +20,9 @@ tested on Ubuntu Studio 24.04
 - Desktop launchers and systemd user timers included for easy user install.
     
 - Better diagnostics: parent env markers, PID logging, immediate-crash detection.
-    
 
+---    
+![GUI show](https://git.redpie.nl/EmperorAndFoolICT-Mediaproductie/automathemely12v2/raw/branch/main/share/AutothGUI2026.png)
 ---
 ## Install as a *user* (development-friendly)
 
