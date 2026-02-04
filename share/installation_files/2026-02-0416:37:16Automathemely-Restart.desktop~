@@ -2,10 +2,10 @@
 Categories=Utility;
 Comment[en_US]=Restart the AutomaThemely scheduler
 Comment=Restart the AutomaThemely scheduler
-Exec=automathemely --restart
+Exec=/bin/bash -lc 'source /home/skdj/Pysolated/penv_automathemely12v2/bin/activate; cd /home/skdj/TheCave/_GitProjects/automathemely-repo; PYTHONPATH=$PWD python -m bin.run --restart'
 GenericName[en_US]=
 GenericName=
-Icon=automathemely
+Icon=/home/skdj/TheCave/_GitProjects/automathemely-repo/lib/automathemely_large.svg
 MimeType=
 Name[en_US]=Automathemely Restart
 Name=Automathemely Restart
