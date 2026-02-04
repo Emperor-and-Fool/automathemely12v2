@@ -1,4 +1,4 @@
-![Automathemely icon](share/AutothGUI2026.png)
+![Automathemely icon](share/icons/AUTOTH2026.png)
 
 # AutomaThemely (fork)
 
