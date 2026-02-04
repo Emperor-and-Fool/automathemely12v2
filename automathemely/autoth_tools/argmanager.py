@@ -105,77 +105,47 @@ def main(us_se):
 
     #   RESTART
     elif args.restart:
-        # Purpose: stop any existing scheduler and spawn a detached scheduler process
-        # whose stdout/stderr are atomically bound to the scheduler logfile so we
-        # capture early startup errors. Keep parent-side logging minimal.
-
         from automathemely.autoth_tools.utils import pgrep, get_bin, get_local
-        import os
-        import time
-        from subprocess import Popen
+        import os, time
+        from subprocess import Popen, STDOUT
 
-        # 1) Kill any running scheduler (best-effort)
+        # kill any running scheduler
         if pgrep(['autothscheduler.py'], use_full=True):
             Popen(['pkill', '-f', 'autothscheduler.py']).wait()
 
-        # 2) Path to scheduler log (we no longer rotate here; rotation lives in __init__.py)
         log_path = get_local('.autothscheduler.log')
 
-        # 3) Parent marker (small, non-verbose): timestamp + VIRTUAL_ENV for later comparison
-        try:
-            with open(log_path, 'a', buffering=1) as m:
-                m.write('=== parent spawn attempt at {}\n'.format(time.strftime('%Y-%m-%d %H:%M:%S')))
-                m.write(f'PARENT_PID={os.getpid()}\n')
-                m.write(f'VIRTUAL_ENV={os.environ.get("VIRTUAL_ENV")}\n')
-                m.flush()
-        except Exception:
-            # never raise here; best-effort diagnostic only
-            pass
+        # prefer repository bin if PYTHONPATH points to repo
+        autoth_path = None
+        py_path = os.environ.get('PYTHONPATH', '')
+        if py_path:
+            repo_candidate = py_path.split(os.pathsep)[0]
+            cand = os.path.join(repo_candidate, 'bin', 'autothscheduler.py')
+            if os.path.exists(cand):
+                autoth_path = cand
+        if not autoth_path:
+            autoth_path = get_bin('autothscheduler.py')
 
-        # 4) Pre-exec setup that runs inside the child (before Python code executes):
-        #    - create a new session (setsid) so the child is disowned from the parent
-        #    - open the logfile and dup it to stdout/stderr so any early output is captured
-        def _preexec_setup():
-            try:
-                os.setsid()
-            except Exception:
-                pass
-            fd = os.open(log_path, os.O_CREAT | os.O_WRONLY | os.O_APPEND, 0o644)
-            # atomic replacement of stdout/stderr
-            os.dup2(fd, 1)
-            os.dup2(fd, 2)
-            if fd > 2:
-                os.close(fd)
-
-        # 5) Spawn the scheduler. We call the repo bin via get_bin() (repo must be importable).
         try:
-            p = Popen([sys.executable, get_bin('autothscheduler.py')],
-                      preexec_fn=_preexec_setup,
-                      close_fds=True)
+            # open log for append and spawn child without creating a new session
+            log = open(log_path, 'a', buffering=1)
+            p = Popen([sys.executable, autoth_path],
+                      stdout=log, stderr=STDOUT, close_fds=True)
         except Exception as e:
-            # record spawn failure in main logger and append a brief marker to the logfile
             logger.exception('Failed to spawn autothscheduler.py: %s', e)
-            try:
-                with open(log_path, 'a', buffering=1) as m:
-                    m.write('=== spawn exception: {}\n'.format(e))
-                    m.flush()
-            except Exception:
-                pass
+            ...
             return
 
-        # 6) Short delay to detect an immediate crash; log outcome and PID
+        logger.info('Restarted the scheduler (pid=%s)', getattr(p, 'pid', 'unknown'))
+        try:
+            log.close()
+        except Exception:
+            pass
+
         time.sleep(0.3)
         if p.poll() is not None:
             rc = p.returncode
             logger.warning('autothscheduler.py exited immediately (rc=%s)', rc)
-            try:
-                with open(log_path, 'a', buffering=1) as m:
-                    m.write('=== child exited immediately rc={}\n'.format(rc))
-                    m.flush()
-            except Exception:
-                pass
-        else:
-            logger.info('Restarted the scheduler (pid=%s)', getattr(p, 'pid', 'unknown'))
     
     #   MANUAL theme mode
     elif args.light:
