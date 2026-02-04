@@ -115,11 +115,15 @@ def main(us_se):
 
     #   RESTART
     elif args.restart:
-        from automathemely.autoth_tools.utils import pgrep, get_bin
-        from subprocess import Popen, DEVNULL
+        from automathemely.autoth_tools.utils import pgrep, get_bin, get_local
+        from subprocess import Popen
         if pgrep(['autothscheduler.py'], use_full=True):
             Popen(['pkill', '-f', 'autothscheduler.py']).wait()
-        Popen([sys.executable, get_bin('autothscheduler.py')], start_new_session=True, stdout=DEVNULL, stderr=DEVNULL)
+
+        log = open(get_local('.autothscheduler.log'), 'a')
+        Popen([sys.executable, get_bin('autothscheduler.py')],
+              start_new_session=True, stdout=log, stderr=log)
+
         logger.info('Restarted the scheduler')
     
     #   MANUAL theme mode

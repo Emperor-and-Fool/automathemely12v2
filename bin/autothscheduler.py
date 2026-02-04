@@ -55,13 +55,28 @@ def run_automathemely():
     def _task():
         from automathemely.autoth_tools.utils import verify_desktop_session
         from subprocess import check_output, PIPE
+        import shutil
+        import sys
         try:
             verify_desktop_session(True)
-            py = sys.executable or "python3"
-            cmd = [py, "-m", "automathemely"]
+
+            # prefer an installed wrapper/launcher if available
+            wrapper = shutil.which("automathemely")
+            if wrapper:
+                cmd = [wrapper]
+            else:
+                # fallback to the current interpreter running this process
+                py = sys.executable or "python3"
+                cmd = [py, "-m", "automathemely"]
+
             check_output(cmd, stderr=PIPE)
         except Exception as e:
             logger.exception("Scheduled run failed: %s", e)
+
+    Thread(target=_task, daemon=True).start()
+    # The scheduler expects the job to cancel itself after running once
+    return CancelJob
+
 
     Thread(target=_task, daemon=True).start()
     # job should cancel itself after launch
