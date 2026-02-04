@@ -8,4 +8,4 @@ source "$VENV/bin/activate"
 cd "$REPO"
 export PYTHONPATH="$REPO"
 
-exec "$VENV/bin/python" -m automathemely.bin.run "$@"
+exec python -m bin.run "$@"

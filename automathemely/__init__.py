@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from sys import stdout, stderr
 from automathemely.autoth_tools.utils import get_local, notify
@@ -31,7 +32,14 @@ timed_details_format = '(%(asctime)s) (%(filename)s:%(funcName)s:%(lineno)s) %(l
 # Setup logging levels/handlers
 main_file_handler = logging.FileHandler(get_local('automathemely.log'), mode='w')
 updsun_file_handler = logging.FileHandler(get_local('.updsuntimes.log'), mode='w')
-scheduler_file_handler = logging.FileHandler(get_local('.autothscheduler.log'), mode='w')
+# scheduler_file_handler = logging.FileHandler(get_local('.autothscheduler.log'), mode='w')
+# new: rotate at 1 MB with 7 backups (adjust maxBytes/backupCount to taste)
+scheduler_file_handler = RotatingFileHandler(
+    get_local('.autothscheduler.log'),
+    maxBytes=1 * 1024 * 1024,    # 1 MB
+    backupCount=7,               # keep last 7 rotations
+    encoding='utf-8'
+)
 info_or_lower_handler = logging.StreamHandler(stdout)
 info_or_lower_handler.setLevel(logging.DEBUG)
 info_or_lower_handler.addFilter(lambda log: log.levelno <= logging.INFO)

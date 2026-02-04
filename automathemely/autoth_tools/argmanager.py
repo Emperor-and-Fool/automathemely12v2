@@ -105,47 +105,55 @@ def main(us_se):
 
     #   RESTART
     elif args.restart:
+        # Purpose: stop any existing scheduler and spawn a detached scheduler process
+        # whose stdout/stderr are atomically bound to the scheduler logfile so we
+        # capture early startup errors. Keep parent-side logging minimal.
+
         from automathemely.autoth_tools.utils import pgrep, get_bin, get_local
         import os
         import time
         from subprocess import Popen
 
-        # kill any running scheduler
+        # 1) Kill any running scheduler (best-effort)
         if pgrep(['autothscheduler.py'], use_full=True):
             Popen(['pkill', '-f', 'autothscheduler.py']).wait()
 
+        # 2) Path to scheduler log (we no longer rotate here; rotation lives in __init__.py)
         log_path = get_local('.autothscheduler.log')
 
-        # write parent marker and dump parent env so we can compare
+        # 3) Parent marker (small, non-verbose): timestamp + VIRTUAL_ENV for later comparison
         try:
             with open(log_path, 'a', buffering=1) as m:
                 m.write('=== parent spawn attempt at {}\n'.format(time.strftime('%Y-%m-%d %H:%M:%S')))
-                for k, v in sorted(os.environ.items()):
-                    m.write(f'ENV[{k}]={v}\n')
+                m.write(f'PARENT_PID={os.getpid()}\n')
+                m.write(f'VIRTUAL_ENV={os.environ.get("VIRTUAL_ENV")}\n')
                 m.flush()
         except Exception:
+            # never raise here; best-effort diagnostic only
             pass
 
-        # This runs in the child, before exec: create a new session and
-        # atomically bind stdout/stderr to the logfile descriptor.
+        # 4) Pre-exec setup that runs inside the child (before Python code executes):
+        #    - create a new session (setsid) so the child is disowned from the parent
+        #    - open the logfile and dup it to stdout/stderr so any early output is captured
         def _preexec_setup():
             try:
                 os.setsid()
             except Exception:
                 pass
             fd = os.open(log_path, os.O_CREAT | os.O_WRONLY | os.O_APPEND, 0o644)
-            os.dup2(fd, 1)   # stdout
-            os.dup2(fd, 2)   # stderr
+            # atomic replacement of stdout/stderr
+            os.dup2(fd, 1)
+            os.dup2(fd, 2)
             if fd > 2:
                 os.close(fd)
 
+        # 5) Spawn the scheduler. We call the repo bin via get_bin() (repo must be importable).
         try:
-            p = Popen(
-                [sys.executable, get_bin('autothscheduler.py')],
-                preexec_fn=_preexec_setup,
-                close_fds=True
-            )
+            p = Popen([sys.executable, get_bin('autothscheduler.py')],
+                      preexec_fn=_preexec_setup,
+                      close_fds=True)
         except Exception as e:
+            # record spawn failure in main logger and append a brief marker to the logfile
             logger.exception('Failed to spawn autothscheduler.py: %s', e)
             try:
                 with open(log_path, 'a', buffering=1) as m:
@@ -155,7 +163,7 @@ def main(us_se):
                 pass
             return
 
-        # short delay so we can detect an immediate crash and log it
+        # 6) Short delay to detect an immediate crash; log outcome and PID
         time.sleep(0.3)
         if p.poll() is not None:
             rc = p.returncode
