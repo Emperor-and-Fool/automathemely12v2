@@ -1,4 +1,4 @@
-![Automathemely icon](https://git.redpie.nl/EmperorAndFoolICT-Mediaproductie/automathemely12v2/raw/branch/main/share/icons/hicolor/scalable/apps/automathemely.svg)
+![Automathemely icon](share/AutothGUI2026.png)
 
 # AutomaThemely (fork)
 
