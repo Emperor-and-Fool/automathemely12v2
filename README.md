@@ -22,7 +22,7 @@ tested on Ubuntu Studio 24.04
 - Better diagnostics: parent env markers, PID logging, immediate-crash detection.
 
 ---    
-![GUI show](https://git.redpie.nl/EmperorAndFoolICT-Mediaproductie/automathemely12v2/raw/branch/main/share/AutothGUI2026.png)
+![GUI show](share/AutothGUI2026.png)
 ---
 ## Install as a *user* (development-friendly)
 
