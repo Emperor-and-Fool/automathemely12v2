@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="/home/skdj/TheCave/_GitProjects/automathemely-repo"
-VENV="/home/skdj/Pysolated/penv_automathemely12v2"
+# defaults (overridable by environment)
+REPO="${REPO:-$HOME/TheCave/_GitProjects/automathemely-repo}"
+VENV="${VENV:-$HOME/Pysolated/penv_automathemely12v2}"
 
 source "$VENV/bin/activate"
 cd "$REPO"
 export PYTHONPATH="$REPO"
 
 exec "$VENV/bin/python" -m automathemely.bin.run "$@"
+
+# set -euo pipefail
+
+# REPO="/home/skdj/TheCave/_GitProjects/automathemely-repo"
+# VENV="/home/skdj/Pysolated/penv_automathemely12v2"
+
+# source "$VENV/bin/activate"
+# cd "$REPO"
+# export PYTHONPATH="$REPO"
+
+# exec "$VENV/bin/python" -m automathemely.bin.run "$@"
