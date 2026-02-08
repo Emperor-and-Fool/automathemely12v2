@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 from os import chdir, getuid
 from pathlib import Path
-
+import subprocess, sys
 import pytz
 import tzlocal
 
@@ -19,7 +19,6 @@ def check_root():  # Prevent from being run as root for security and compatibili
         logger.critical('This shouldn\'t be run as root unless told otherwise!')
         sys.exit()
 
-
 def main():
 
     check_root()
@@ -29,7 +28,7 @@ def main():
     repo_root = str(workspace.parent)
     if repo_root not in sys.path:
         sys.path.insert(0, repo_root)
-
+    
     import automathemely
 
     from automathemely.autoth_tools import argmanager, extratools, envspecific, updsuntimes

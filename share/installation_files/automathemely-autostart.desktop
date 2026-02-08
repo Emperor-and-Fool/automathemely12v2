@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=AutomaThemely (autostart)
+Comment=Start scheduler and apply current theme when KDE session is ready
+Exec=/bin/sh -c 'for i in 1 2 3; do [ -S "/run/user/$(id -u)/bus" ] && pgrep -x plasmashell >/dev/null && break || sleep 1; done; automathemely --restart && automathemely'
+Terminal=false
+StartupNotify=false
+OnlyShowIn=KDE;KDE;XFCE;Cinnamon;
+X-GNOME-Autostart-enabled=true
+WantedBy=default.target
