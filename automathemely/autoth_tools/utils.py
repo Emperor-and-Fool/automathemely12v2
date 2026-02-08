@@ -82,7 +82,7 @@ def verify_desktop_session(wait=False):
     import time
     while True:
         # noinspection SpellCheckingInspection
-        if pgrep(['gnome-session', 'plasmashell', 'cinnamon-sessio', 'xfce4-session']):
+        if pgrep(['gnome-session', 'plasmashell', 'cinnamon-session', 'xfce4-session']):
             if not wait:
                 return True
             break

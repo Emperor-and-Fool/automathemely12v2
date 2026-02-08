@@ -52,11 +52,36 @@ Ensure repo contains a package at:
 
 If not present, copy the repo tree contents into `automathemely/` so `import automathemely` resolves to the repo.
 
-### 3) Desktop launchers (user install)
+### 3) Desktop launcher (recommended, in-session autostart)
+
+The _simplest and most reliable_ way to ensure the scheduler runs **inside your graphical session** (so theme changes are visible) is to add a desktop autostart entry that the session manager runs at login.
+
+Create `~/.config/autostart/automathemely-autostart.desktop` with:
+
+```
+[Desktop Entry]
+Type=Application
+Name=AutomaThemely (autostart)
+Comment=Start scheduler and apply current theme when session is ready
+Exec=/bin/sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do [ -S "/run/user/$(id -u)/bus" ] && pgrep -x plasmashell >/dev/null && break || sleep 1; done; automathemely --restart && automathemely'
+Terminal=false
+StartupNotify=false
+OnlyShowIn=KDE;
+X-GNOME-Autostart-enabled=true
+```
+
+Notes:
+
+- The small startup loop waits up to ~3s for the session bus and `plasmashell`, then runs `automathemely --restart` (starts the scheduler) and `automathemely` (immediate theme check). This works reliably in Plasma on both X11 and Wayland.
+    
+- Use your DE’s autostart UI or drop the file into `~/.config/autostart/`.
 
 Copy the packaged `.desktop` files and icons to user locations:
 
 ```bash
+mkdir -p ~/.config/autostart
+cp -a share/installation_files/Automathemely-autostart.desktop ~/.config/autostart/
+chmod 644 ~/.config/autostart/Automathemely-autostart.desktop
 mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/48x48/apps
 # (make your DevOp executable readable/executable)
 chmod +x {DEV_EXEC}
