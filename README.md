@@ -22,7 +22,7 @@ tested on Ubuntu Studio 24.04
 - Better diagnostics: parent env markers, PID logging, immediate-crash detection.
 
 ---    
-![GUI show](share/AutothGUI2026.png)
+![GUI show](share/icons/AutothGUI2026.png)
 ---
 ## Install as a *user* (development-friendly)
 
@@ -52,22 +52,21 @@ Ensure repo contains a package at:
 
 If not present, copy the repo tree contents into `automathemely/` so `import automathemely` resolves to the repo.
 
-### 3) Desktop launcher (recommended, in-session autostart)
+###  3) Desktop launcher (recommended, in-session autostart)
 
 The _simplest and most reliable_ way to ensure the scheduler runs **inside your graphical session** (so theme changes are visible) is to add a desktop autostart entry that the session manager runs at login.
-
-Create `~/.config/autostart/automathemely-autostart.desktop` with:
 
 ```
 [Desktop Entry]
 Type=Application
 Name=AutomaThemely (autostart)
 Comment=Start scheduler and apply current theme when session is ready
-Exec=/bin/sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do [ -S "/run/user/$(id -u)/bus" ] && pgrep -x plasmashell >/dev/null && break || sleep 1; done; automathemely --restart && automathemely'
+Exec=/bin/sh -c 'for i in 1 2 3; do [ -S "/run/user/$(id -u)/bus" ] && pgrep -x plasmashell >/dev/null && break || sleep 1; done; automathemely --restart && automathemely'
 Terminal=false
 StartupNotify=false
 OnlyShowIn=KDE;
 X-GNOME-Autostart-enabled=true
+
 ```
 
 Notes:
@@ -80,6 +79,7 @@ Copy the packaged `.desktop` files and icons to user locations:
 
 ```bash
 mkdir -p ~/.config/autostart
+# autostart scheduler and theme check
 cp -a share/installation_files/Automathemely-autostart.desktop ~/.config/autostart/
 chmod 644 ~/.config/autostart/Automathemely-autostart.desktop
 mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/48x48/apps
@@ -104,13 +104,11 @@ Install and enable the provided user units:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cp -a share/installation_files/autothscheduler-start.service ~/.config/systemd/user/
 cp -a share/installation_files/sun-times.service share/installation_files/sun-times.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now sun-times.timer
-systemctl --user enable --now autothscheduler-start.service
 # view status:
-systemctl --user status sun-times.timer autothscheduler-start.service
+systemctl --user status sun-times.timer sun-times.service
 journalctl --user -u sun-times.service -n 200 --no-pager
 ```
 
