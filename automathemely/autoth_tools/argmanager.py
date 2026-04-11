@@ -103,6 +103,17 @@ def main(us_se):
         settsmanager.main(us_se)
         return
 
+    #   UPDATE
+    elif args.update:
+        from . import updsuntimes
+        from automathemely.autoth_tools.utils import get_local
+        output = updsuntimes.main(us_se)
+        if output:
+            with open(get_local('sun_times'), 'wb') as file:
+                pkl.dump(output, file, protocol=pkl.HIGHEST_PROTOCOL)
+            logger.info('Sun hours successfully updated')
+        return
+
     #   RESTART
     elif args.restart:
         from automathemely.autoth_tools.utils import pgrep, get_bin, get_local

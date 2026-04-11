@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # defaults (overridable by environment)
-REPO="${REPO:-$HOME/TheCave/_GitProjects/emperorandfools-repos/automathemely-repo}"
+REPO="${REPO:-$HOME/_GitProjects/emperorandfools-repos/automathemely-repo}"
 VENV="${VENV:-$HOME/Pysolated/penv_automathemely12v2}"
 
 source "$VENV/bin/activate"
