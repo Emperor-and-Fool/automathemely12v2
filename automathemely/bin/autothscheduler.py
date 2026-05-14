@@ -2,6 +2,7 @@
 import sys
 import shutil
 import logging
+import signal
 import time
 from datetime import datetime
 
@@ -19,6 +20,15 @@ logger.addHandler(warning_or_higher_handler)
 
 for handler in logger.handlers[:]:
     handler.setFormatter(logging.Formatter(timed_details_format))
+
+
+def _handle_signal(signum, frame):
+    name = signal.Signals(signum).name
+    logger.warning('Received %s — exiting', name)
+    sys.exit(0)
+
+signal.signal(signal.SIGHUP, _handle_signal)
+signal.signal(signal.SIGTERM, _handle_signal)
 
 
 def get_next_run():
@@ -42,9 +52,9 @@ def get_next_run():
                        sunset.astimezone(local_tz).time())
 
     if sunrise < now < sunset:
-        return ':'.join(str(sunset).split(':')[:-1])
+        return ':'.join(str(sunset).split(':')[:-1]), 'sunset'
     else:
-        return ':'.join(str(sunrise).split(':')[:-1])
+        return ':'.join(str(sunrise).split(':')[:-1]), 'sunrise'
 
 
 def run_automathemely():
@@ -100,7 +110,10 @@ class SafeScheduler(Scheduler):
 scheduler = SafeScheduler()
 
 while True:
-    scheduler.every().day.at(get_next_run()).do(run_automathemely)
+    next_run, label = get_next_run()
+    logger.info('Scheduler waiting — next event: %s at %s', label, next_run)
+
+    scheduler.every().day.at(next_run).do(run_automathemely)
 
     while True:
         if not scheduler.jobs:
