@@ -49,7 +49,10 @@ warning_or_higher_handler.setLevel(logging.WARNING)
 # TODO: Figure out a better way to handle notifications that is as flexible as this that doesn't spam the user in case
 # one of the imported libraries malfunctions and decides to also use this root logger
 notifier_handler = NotifyHandler()
-notifier_handler.setLevel(logging.INFO)
+# WARNING, not INFO: at INFO every step of a theme switch became its own
+# desktop notification ("Switching to...", "Switched to...", "toggle clicked").
+# Only surface things that actually need attention.
+notifier_handler.setLevel(logging.WARNING)
 
 # Setup root logger
 # noinspection SpellCheckingInspection
